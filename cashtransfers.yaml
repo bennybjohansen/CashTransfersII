@@ -1,0 +1,248 @@
+openapi: 3.1.0
+info:
+  version: 1.0.0
+  title: CashTransfers Demo Project
+  termsOfService: 'https://example.com/terms/'
+  contact:
+    email: contact@example.com
+    url: 'http://example.com/contact'
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+  x-logo:
+    url: 'https://redocly.github.io/openapi-template/logo.png'
+  description: >
+    This is an **example** API to demonstrate how to implement most OAS features.
+
+externalDocs:
+  description: Find out how to create a GitHub repo for your OpenAPI definition.
+  url: 'https://github.com/Rebilly/generator-openapi-repo'
+tags:
+  - name: CashTransfers
+    description: Endpoints related to performing cash transfers
+  - name: User
+    description: Operations about user
+servers:
+  - url: 'http://example.com/api/v1'
+  - url: 'https://example.com/api/v1'
+paths:
+  /cashtransfers:
+    get:
+      tags:
+        - CashTransfers
+      operationId: get-cashtransfers
+      summary: Fetch summary of transfers.
+      description: Fetches summary of cash transfers. Use this to get an understanding of the status of each transfer.
+      parameters:
+        - name: FromAccountKey
+          $ref: '#/components/parameters/AccountKey'
+          in: query
+          description: Only return transactions with the specified FromAccountKey
+          example: "gh-xomNFSNUYdRL0KrPpg=="
+
+        - name: ClientKey
+          in: query
+          $ref: '#/components/parameters/ClientKey'
+          description: Only return transactions wtih specified ClientKey
+        - name: SomeOtherKey
+          in: query
+          $ref: '#/components/parameters/AccountKey'  
+
+        - name: ToAccountKey
+          in: query
+          $ref: '#/components/parameters/AccountKey'
+          description: Only return transactions with specified ToAccountKey
+        - name: FundingCheck
+          in: query
+          $ref: '#/components/parameters/FundingCheck'
+          description: Only return transactions with specified FundingCheck
+        - name: FromDateTime
+          in: query
+          $ref: '#/components/parameters/UtcDateTime'
+          description: Only return entries with a value data greater or eaqual to FromDateTime
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Amount:
+                    type: number
+                    description: The amount being transferred
+                  FromAccount:
+                    $ref: '#/components/schemas/AccountKey'
+                    description: The account from where the money is taken
+                  ToAccount:
+                    $ref: '#/components/schemas/AccountKey'
+                    description: The account to where the money will go
+                  ValueDate:
+                    $ref: '#/components/schemas/UtcDateTime'
+                    description: The value date of the transaction
+                  Display:
+                    $ref: '#/components/schemas/DisplayAndFormat'
+    post:
+      tags:
+        - CashTransfers
+      operationId: post-cashtransfers
+      summary: Submit request for a cash transfer.
+      description: Submit request or a cash transfer. The cash transfer will be pre-validated, and normally executed within 10-15 seconds.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Amount:
+                  type: number
+                  description: The value to be transacted
+                Comment:
+                  type: string
+                  maxLength: 50
+                  description: Comment to the transaction. The comment will be seen in the EOD files.
+                Currency:
+                  type: string
+                  maxLength: 4
+                  description: The currency of the transaction. Must be the same as that of the To and From accounts.
+                FundingCheck:
+                  $ref: '#/components/schemas/FundingCheck'
+                  description: Optionally set the value for FundingCheck Default is Enforce  
+                FromAccountKey:
+                  $ref: '#/components/schemas/AccountKey'
+                  description: This is where the money is taken from.
+                ToAccountKey:
+                  $ref: '#/components/schemas/AccountKey'
+                  description: This is where the money is transferred to
+                ValueDate:
+                  $ref: '#/components/schemas/UtcDateTime'
+                  summary: This is the summary for UtcDateTime
+                  description: Value date of settlement of cash transfer.
+                ExternalReference:
+                  type: string
+                  description: Specify this so you can find it later.
+                SomeOtherField:
+                  $ref: '#/components/schemas/AccountKey'
+                FinalField:
+                  $ref: './definitions.yaml#/components/schemas/AccountKeyType'
+                  description: 'this field is referring to an external reference'
+              required:
+                - Amount
+                - Currency
+                - FromAccountKey
+                - ToAccountKey
+                - ValueDate
+   
+
+      responses:
+        '200':
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  TransferId:
+                    type: string
+                    description: "Saxo issued identifer for this transfer request"
+                    example: "88832942"
+     
+        
+components:
+  schemas:
+    AccountKey:
+      type: string
+      title: AccountKey
+      description: 'Encrypted version of AccountId, used as the primary identifier of an account.'
+      example: X1JlUyeXTMK3mBxzd-D2UA==
+    ClientKey:
+      type: string
+      title: ClientKey
+      description: 'Encrypted version of ClientId, used as primary identifier of a client.'
+      example: X1JlUyeXTMK3mBxzd-D2UA==
+    UtcDateTime:
+      type: string
+      title: UtcDateTime
+      description: Date/Time in ISO8601 format. Must be in UTC.
+      example: '2019-10-08T08:41:23.770000Z'
+    FundingCheck:
+      type: string
+      title: FundingCheck
+      description: |-
+        Specifies if funding rules should be enforced or not.
+        Note, in this case it could be replaced by a simple boolean, but often it really would need to be an
+        enum. For example, it could instead have been (Global, Partically, Local, Ignore)  
+      enum:
+      - Enforce
+      - Ignore
+      example: Enforce
+    DisplayAndFormat:
+      title: DisplayAndFormat
+      type: object
+      description: 'This object represents standard object, which we would use in a lot of locations to profile  general formatting information. '
+      properties:
+        Symbol:
+          type: string
+          description: 'A combination of letters used to uniquely identify a traded instrument. I.e. "ODAX /X13C8950:xeur" or "EURUSD".'
+          example: 'ODAX/X13C8950:xeur'
+        Description:
+          type: string
+          maxLength: 50
+          description: 'Description of the instrument, such as: "DAX Index 2021)'
+        Format:
+          type: string
+          enum:
+          - Normal
+          - Fractions
+          - Percentage
+          - AllowDecimalPips
+          description: 'Information about how to display an instrument and format prices and amounts related to the instrument.'  
+
+          example: Normal
+        Decimals:
+          type: integer
+          description: How many decimals to use when displaying prices
+          example: 3
+  parameters:
+    AccountKey:
+      name: AccountKey
+      in: query
+      required: false
+      schema:
+         $ref: '#/components/schemas/AccountKey'
+    ClientKey:
+      name: ClientKey
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/ClientKey'
+    FundingCheck:
+      name: FundingCheck
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/FundingCheck'
+    UtcDateTime:
+      name: UtcDateTime
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/UtcDateTime'
+
+
+  securitySchemes:
+    main_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: 'http://example.com/api/oauth/dialog'
+          scopes:
+            'read:users': read users info
+            'write:users': modify or remove users
+    api_key:
+      type: apiKey
+      in: header
+      name: api_key
+    basic_auth:
+      type: http
+      scheme: basic

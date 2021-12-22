@@ -1,0 +1,12 @@
+components:
+  schemas:
+    AccountKeyType:
+      type: string
+      title: AccountKeyType
+      description: 'Encrypted version of AccountId, used as the primary identifier of an account.'
+      example: X1JlUyeXTMK3mBxzd-D2UA==
+    ClientKeyType:
+      type: string
+      title: ClientKeyType
+      description: 'Encrypted version of ClientId, used as primary identifier of a client.'
+      example: X1JlUyeXTMK3mBxzd-D2UA==

@@ -1,0 +1,23 @@
+{
+  "formats": [
+    "oas3.1"
+  ],
+  "extends": [
+    "spectral:oas"
+  ],
+  "rules": {
+    "schema-names-pascal-case": {
+      "description": "Schema names MUST be written in PascalCase",
+      "message": "{{property}} is not PascalCase: {{error}}",
+      "recommended": true,
+      "type": "style",
+      "given": "$.components.schemas.*~",
+      "then": {
+        "function": "pattern",
+        "functionOptions": {
+          "match": "^[A-Z][a-zA-Z0-9]*$"
+        }
+      }
+    }
+  }
+}
